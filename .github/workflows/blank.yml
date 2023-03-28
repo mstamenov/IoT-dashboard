@@ -16,8 +16,8 @@ jobs:
       - name: 'Az CLI login using OIDC'
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.CLIENTID }}
-          tenant-id: ${{ secrets.TENANTID }}
+          client-id: ${{ secrets.APPLICATIONID }}
+          tenant-id: ${{ secrets.TENANTIDTENANTID }}
           subscription-id: ${{ secrets.SUBSCRIPTIONID }}
 
       - name: 'Run az commands'
