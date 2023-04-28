@@ -1,4 +1,8 @@
-using Microsoft.EntityFrameworkCore;
+using Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +11,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<IoTContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IoTContext")));
+builder.Services.AddMediatR(configuration => configuration.RegisterServicesFromAssemblyContaining<DataPointer>());
+
+builder.Services.AddServices(builder.Configuration);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(jwt =>
+{
+    var key = Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:TokenKey").Value ?? string.Empty);
+    jwt.SaveToken = true;
+    jwt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false, //for dev
+        ValidateAudience = false, //for dev
+        ValidateLifetime = true,
+        RequireExpirationTime = false //for dev
+    };
+});
+
 
 var app = builder.Build();
 
@@ -20,6 +47,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

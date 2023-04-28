@@ -1,4 +1,7 @@
-using ContosoUniversity.Models;
+using Data.Queries.Telemetries;
+using IoT.Domain.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using webapi.ViewObjects;
 
@@ -8,115 +11,23 @@ namespace webapi.Controllers;
 [Route("[controller]")]
 public class TelemetryController : ControllerBase
 {
-    private readonly ILogger<TelemetryController> _logger;
-    private readonly IoTContext _dbContext;
+    private readonly IMediator _mediator;
 
-    public TelemetryController(ILogger<TelemetryController> logger, IoTContext dbContext)
+    public TelemetryController(ILogger<TelemetryController> logger, IMediator mediator)
     {
-        _logger = logger;
-        _dbContext = dbContext;
+        _mediator = mediator;
     }
 
     [HttpGet("LastDay")]
-    public IEnumerable<HourlyTelemetryVO> GetLastDay()
-    {
-        var telemetry = from t in _dbContext.Set<Telemetry>().Where(t => t.CreateDate > DateTime.Now.AddDays(-1))
-                        group new
-                        {
-                            t.Temperature,
-                            t.Humidity,
-                            t.Pressure,
-                        } by new
-                        {
-                            t.CreateDate.Date,
-                            t.CreateDate.Hour,
-                            t.DeviceId
-                        } into g
-                        select new HourlyTelemetryVO
-                        {
-                            Date = g.Key.Date,
-                            Hour = g.Key.Hour,
-                            DeviceId = g.Key.DeviceId,
-                            Temperature = g.Average(t => t.Temperature),
-                            Humidity = g.Average(t => t.Humidity),
-                            Pressure = g.Average(t => t.Pressure)
-                        };
-        return telemetry
-            .OrderBy(s => s.Date)
-            .ThenBy(s => s.Hour);
-                        
-    }
+    public Task<List<HourlyTelemetryVO>> GetLastDay() => _mediator.Send(new GetLastDayTelemetryQuery());
 
     [HttpGet("LastWeek")]
-    public IEnumerable<HourlyTelemetryVO> GetLastWeek()
-    {
-        var telemetry = from t in _dbContext.Set<Telemetry>().Where(t => t.CreateDate > DateTime.Now.AddDays(-7))
-                        group new
-                        {
-                            t.Temperature,
-                            t.Humidity,
-                            t.Pressure,
-                        } by new
-                        {
-                            t.CreateDate.Date,
-                            Hour = t.CreateDate.Hour < 12 ? 0 : 12,
-                            t.DeviceId
-                        } into g
-                        select new HourlyTelemetryVO
-                        {
-                            Date = g.Key.Date,
-                            Hour = g.Key.Hour,
-                            DeviceId = g.Key.DeviceId,
-                            Temperature = g.Average(t => t.Temperature),
-                            Humidity = g.Average(t => t.Humidity),
-                            Pressure = g.Average(t => t.Pressure)
-                        };
-        return telemetry
-            .OrderBy(s => s.Date)
-            .ThenBy(s => s.Hour);
-    }
+    public async Task<List<HourlyTelemetryVO>> GetLastWeek() => await _mediator.Send(new GetLastWeekTelemetryQuery());
+    
 
     [HttpGet("LastMonth")]
-    public IEnumerable<DailyTelemetryVO> GetLastMonth()
-    {
-        var telemetry = from t in _dbContext.Set<Telemetry>().Where(t => t.CreateDate > DateTime.Now.AddMonths(-30))
-                        group new
-                        {
-                            t.Temperature,
-                            t.Humidity,
-                            t.Pressure,
-                        } by new
-                        {
-                            t.CreateDate.Date,
-                            t.DeviceId
-                        } into g
-                        select new DailyTelemetryVO
-                        {
-                            Date = g.Key.Date,
-                            DeviceId = g.Key.DeviceId,
-                            Temperature = g.Average(t => t.Temperature),
-                            Humidity = g.Average(t => t.Humidity),
-                            Pressure = g.Average(t => t.Pressure)
-                        };
-        return telemetry
-            .OrderByDescending(s => s.Date);
-    }
+    public Task<List<DailyTelemetryVO>> GetLastMonth() =>  _mediator.Send(new GetLastMonthTelemetryQuery());
 
     [HttpGet("Current")]
-    public IEnumerable<Telemetry> GetCurrent()
-    {
-        var maxDateBySensor = _dbContext.Set<Telemetry>()
-            .GroupBy(t => t.DeviceId)
-            .Select(g => new
-            {
-                DeviceId = g.Key,
-                MaxDate = g.Max(t => t.CreateDate)
-            });
-
-        var result = from t in _dbContext.Set<Telemetry>()
-                     join m in maxDateBySensor on new { t.DeviceId, Date = t.CreateDate } equals new { m.DeviceId, Date = m.MaxDate }
-                     select t;
-
-        return result.ToList(); ;
-    }
+    public Task<List<Telemetry>> GetCurrent() => _mediator.Send(new GetCurrentTelemetryQuery());
 }

@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿
 
-namespace ContosoUniversity.Models
+namespace IoT.Domain.Models
 {
     public class Telemetry
     {

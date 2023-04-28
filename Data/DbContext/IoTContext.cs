@@ -1,13 +1,15 @@
-﻿using ContosoUniversity.Models;
+﻿using IoT.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-public class IoTContext : DbContext
+namespace IoT.Data;
+
+internal class IoTContext : DbContext, IIoTContext
 {
     public IoTContext(DbContextOptions<IoTContext> options) : base(options)
     {
     }
 
-    public DbSet<Telemetry> Courses { get; set; }
+    public DbSet<Telemetry> Telemetries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
