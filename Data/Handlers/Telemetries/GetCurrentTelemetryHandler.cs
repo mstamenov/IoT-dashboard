@@ -3,24 +3,20 @@ using IoT.Data;
 using IoT.Domain.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Data.Handlers.Telemetries
 {
     public class GetCurrentTelemetryHandler : IRequestHandler<GetCurrentTelemetryQuery, List<Telemetry>>
     {
         private readonly IIoTContext _ioTContext;
+        private readonly TimeZoneInfo _tzi;
 
-        public GetCurrentTelemetryHandler(IIoTContext ioTContext)
+        public GetCurrentTelemetryHandler(IIoTContext ioTContext, TimeZoneInfo tzi)
         {
-            this._ioTContext = ioTContext;
+            _ioTContext = ioTContext;
+            _tzi = tzi;
         }
-        public Task<List<Telemetry>> Handle(GetCurrentTelemetryQuery request, CancellationToken cancellationToken)
+        public async Task<List<Telemetry>> Handle(GetCurrentTelemetryQuery request, CancellationToken cancellationToken)
         {
             var maxDateBySensor = _ioTContext.Telemetries
             .GroupBy(t => t.DeviceId)
@@ -34,7 +30,9 @@ namespace Data.Handlers.Telemetries
                          join m in maxDateBySensor on new { t.DeviceId, Date = t.CreateDate } equals new { m.DeviceId, Date = m.MaxDate }
                          select t;
 
-            return result.ToListAsync();
+            var output = await result.ToListAsync();
+            output.ForEach(t => t.CreateDate = TimeZoneInfo.ConvertTimeFromUtc(t.CreateDate, _tzi));
+            return output;
         }
     }
 }

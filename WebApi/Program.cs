@@ -15,6 +15,10 @@ builder.Services.AddMediatR(configuration => configuration.RegisterServicesFromA
 
 builder.Services.AddServices(builder.Configuration);
 
+//add TimeZoneInfo to DI system
+builder.Services.AddSingleton<TimeZoneInfo>(TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time"));
+
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,6 +55,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.MapControllers();
 

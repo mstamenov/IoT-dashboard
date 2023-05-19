@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -21,20 +22,20 @@ export class AppComponent {
     const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
 
 
-    this.http.get<Telemetry[]>('/Telemetry/Current').subscribe(data => {
+    this.http.get<Telemetry[]>(`${environment.apiUrl}Telemetry/Current`).subscribe(data => {
       this.telemetry = data[0];
     });
 
-    this.http.get<HourlyTelemetryVO[]>('/Telemetry/LastDay').subscribe(data => {
+    this.http.get<HourlyTelemetryVO[]>(`${environment.apiUrl}Telemetry/LastDay`).subscribe(data => {
       data.forEach(x => x.date = new Date(x.date));
       this.data = data;
       this.ld = {
-        labels: data.map(x => `${x.date.toDateString()} / ${x.hour}` ),
+        labels: data.map((x) => `${x.hour}:00:00`),
         datasets: [
             {
-                label: 'First Dataset',
+                label: 'Парник енина',
                 data: this.data.map(x => x.temperature),
-                fill: false,
+                fill: true,
                 borderColor: documentStyle.getPropertyValue('--blue-500'),
                 tension: 0.4
             }

@@ -1,4 +1,4 @@
-
+<app-header></app-header>
 <div class="bounds" class="mat-app-background">
 	<div class="content" fxLayout="row" fxLayout.sm="column" fxFlexFill>
 		<div fxFlex="33" class="column" fxFlex.sm="15">
@@ -6,12 +6,12 @@
         <mat-card>
           <mat-card-title>Температура</mat-card-title>
           <mat-card-subtitle>Сензор 1</mat-card-subtitle>
-          <mat-card-content>
+          <mat-card-content *ngIf="telemetry">
             <div class="gauge-content "
             [ngClass]="{
-              'blue-bg': telemetry!.temperature < 20,
-              'green-bg': telemetry!.temperature >= 20 && telemetry!.temperature < 35,
-              'orange-bg': telemetry!.temperature >= 35
+              'blue-bg': telemetry.temperature < 20,
+              'green-bg': telemetry.temperature >= 20 && telemetry!.temperature < 35,
+              'orange-bg': telemetry.temperature >= 35
             }">
               <h1>{{ telemetry!.temperature }}℃</h1>
             </div>
@@ -24,7 +24,7 @@
         <mat-card>
           <mat-card-title>Влажност</mat-card-title>
           <mat-card-subtitle>Сензор 1</mat-card-subtitle>
-          <mat-card-content>
+          <mat-card-content *ngIf="telemetry">
             <div class="gauge-content" [ngClass]="{
               'blue-bg': telemetry!.humidity < 40,
               'green-bg': telemetry!.humidity >= 40 && telemetry!.humidity < 70,
@@ -41,7 +41,7 @@
         <mat-card>
           <mat-card-title>Атмосферно налягане</mat-card-title>
           <mat-card-subtitle>Сензор 1</mat-card-subtitle>
-          <mat-card-content>
+          <mat-card-content *ngIf="telemetry">
             <div class="gauge-content gray-bg">
               <h1>{{ telemetry!.pressure }}hPa</h1>
             </div>
@@ -50,13 +50,13 @@
       </div>
 		</div>
 	</div>
-  <p>* Дата на последно измерване: {{telemetry!.createDate}}</p>
+  <p *ngIf="telemetry">* Дата на последно измерване: {{telemetry!.createDate}}</p>
   <div class="content" fxLayout="row" fxLayout.sm="column" fxFlexFill>
 		<div fxFlex="50" class="column" fxFlex.sm="15">
       <div >
         <mat-card>
           <mat-card-title>Последни 24 часа</mat-card-title>
-          <mat-card-subtitle>Температура</mat-card-subtitle>
+          <mat-card-subtitle>Температура ℃</mat-card-subtitle>
           <mat-card-content>
             <p-chart type="line" [data]="ld" [options]="options"></p-chart>
           </mat-card-content>

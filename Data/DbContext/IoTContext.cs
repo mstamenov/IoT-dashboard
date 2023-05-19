@@ -13,6 +13,6 @@ internal class IoTContext : DbContext, IIoTContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Telemetry>().ToTable("Enina");
+        modelBuilder.Entity<Telemetry>().ToTable("Telemetry");
     }
 }
