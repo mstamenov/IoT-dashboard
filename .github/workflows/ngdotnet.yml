@@ -18,6 +18,9 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
