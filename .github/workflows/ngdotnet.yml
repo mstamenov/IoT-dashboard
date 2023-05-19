@@ -18,7 +18,8 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install dependencies
+      - name: Setup Symfony
+        working-directory: ./Dashboard
         run: npm install
 
       - name: Set up .NET Core
